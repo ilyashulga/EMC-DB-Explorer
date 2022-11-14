@@ -1,3 +1,4 @@
+import os
 import json
 import pandas as pd
 import plotly.express as px
@@ -20,7 +21,67 @@ def generate_graph(df, graph_title):
 
     return fig
 
+def add_traces_to_fig(dff):
+    
+    fig = go.Figure()
+    
+    # Read Limits.csv content with pandas into dataframe and add to graphs figure
+    try:
+        df_limits = pd.read_csv(os.path.join(os.path.abspath(os.path.dirname(__file__)), "static", "Limits.csv"))
+    except:
+        return print("Error reading Limits.csv")
+    df_limits.columns = ['Frequency[MHz]','CISPR11_RE_CLASS_B_Group_1', 'CISPR11_RE_CLASS_B_Group_1_Important']
+    graph_name = 'Limit: CISPR11 RE CLASS B Group 1'
+    fig.add_trace(go.Scatter(x=df["Frequency[MHz]"], y=df["CISPR11_RE_CLASS_B_Group_1"], name=graph_name, mode="lines"))
+    graph_name = 'Limit (important): CISPR11 RE CLASS B Group 1'
+    fig.add_trace(go.Scatter(x=df["Frequency[MHz]"], y=df["CISPR11_RE_CLASS_B_Group_1_Important"], name=graph_name, mode="lines"))
+    
+    # Iterate over each row in selected_rows dataframe
+    for row in range(len(dff)):
+        # Read csv at location specified in each row (folder + filename) - begin with local
+        try:
+            df_traces = pd.read_csv(os.path.join(os.path.abspath(os.path.dirname(__file__)), dff.at[row,'folder'], dff.at[row,'filename']), skiprows=18)
+        except:
+            return print("Error reading traces csv file")
+        # Change column names in dataframe to more intuitive
+        df_traces.columns = ['Frequency[MHz]','Max(Ver,Hor)', 'Ver', 'Hor']
+        # Iterate over each file's rows and make required calculations/substitutions
+        for freq in range(len(df_traces)):
+            df_traces.at[freq,'Max(Ver,Hor)'] = max(df_traces.at[freq,'Hor'], df_traces.at[freq,'Ver'])
+            df_traces.at[freq,'Frequency[MHz]'] = df_traces.at[freq,'Frequency[MHz]']/1000000
+        # create xy chart using plotly library
+        graph_name = dff.at[row,'model'] + ' ' + dff.at[row,'layout'] + ' ' + dff.at[row,'cl_ol'] + ' ' + dff.at[row,'mode'] + ' ' + dff.at[row,'user_comment']
+        fig.add_trace(go.Scatter(x=df_traces["Frequency[MHz]"], y=df_traces["Max(Ver,Hor)"], name=graph_name, mode="lines")) 
 
+        # Change x-axis to log scale
+        fig.update_xaxes(type="log")
+        fig.update_xaxes(title_text='Frequency [MHz]',
+                            title_font = {"size": 20},
+                            title_standoff = 0)
+        fig.update_yaxes(title_text='dBuV/m',
+                            title_font = {"size": 20},
+                            title_standoff = 5)
+        fig.update_layout(#autosize=False,
+                            minreducedwidth=250,
+                            minreducedheight=500,
+                            #width=1500,
+                            height=700,
+                            legend=dict(
+                                #yanchor="top",
+                                y=-0.3,
+                                #xanchor="left",
+                                #x=0.01,
+                                orientation='h'
+                                ),
+                            title={
+                                'text': "Radiated Emission",
+                                'y':0.9,
+                                'x':0.5,
+                                'xanchor': 'center',
+                                'yanchor': 'top'}
+                            )
+
+        return fig 
 
 def generate_table(dataframe, max_rows):
     return html.Table([
@@ -33,3 +94,5 @@ def generate_table(dataframe, max_rows):
             ]) for i in range(min(len(dataframe), max_rows))
         ])
     ])
+
+

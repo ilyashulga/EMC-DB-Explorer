@@ -6,8 +6,9 @@ from dash import Dash, html, dash_table, dcc
 import plotly.express as px
 import pandas as pd
 import os
+import plotly.graph_objects as go
 
-from helpers import generate_graph, generate_table
+from helpers import generate_graph, generate_table, add_traces_to_fig
 
 
 # Configure standard SQLite3
@@ -100,23 +101,18 @@ def update_bar(all_rows_data, slctd_row_indices, slct_rows_names, slctd_rows,
     print("Complete data of active cell: {}".format(actv_cell))
     print("Complete data of all selected cells: {}".format(slctd_cell))
 
-    dff = pd.DataFrame(all_rows_data)
+    dff = pd.DataFrame(slctd_rows)
 
-    # used to highlight selected countries on bar chart
-    for row in range(len(dff)):
-        
+    # Create empty multiple graph plotly opject
+    
 
-    if "country" in dff and "did online course" in dff:
-        return [
-            dcc.Graph(id='bar-chart',
-                      figure=px.bar(
-                          data_frame=dff,
-                          x="country",
-                          y='did online course',
-                          labels={"did online course": "% of Pop took online course"}
-                      ).update_layout(showlegend=False, xaxis={'categoryorder': 'total ascending'})
-                      .update_traces(marker_color=colors, hovertemplate="<b>%{y}%</b><extra></extra>")
-                      )
+    # Add selected rows traces to figure
+    fig = add_traces_to_fig(dff)
+
+    
+    return [
+            dcc.Graph(id='line-chart',
+                      figure=fig)
         ]
 
 
