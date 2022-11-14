@@ -18,15 +18,15 @@ db = connect("plotter.db")
 app = Dash(__name__, prevent_initial_callbacks=True)
 
 # Read csv content with pandas into dataframe starting from row 18 (otherwise pandas can't read properly the data)
-filename = "All_Traces.csv"
+#filename = "All_Traces.csv"
 
 
-df1 = pd.read_csv(os.path.join(filename), skiprows=18)
+#df1 = pd.read_csv(os.path.join(filename), skiprows=18)
 
 # Change column names in dataframe to more intuitive
-df1.columns = ['Frequency[MHz]','Max(Ver,Hor)', 'Ver', 'Hor']
+#df1.columns = ['Frequency[MHz]','Max(Ver,Hor)', 'Ver', 'Hor']
 
-fig = generate_graph(df1, "test")
+#fig = generate_graph(df1, "test")
 
 df2 = pd.read_sql("SELECT users.username, graphs.timestamp, sessions.name, sessions.description, graphs.model, graphs.layout, graphs.is_cl, graphs.v_in, graphs.v_out, graphs.i_in, graphs.i_load, graphs.dc, graphs.power, graphs.is_final, sessions.folder, graphs.filename FROM graphs JOIN users ON sessions.user_id = users.id JOIN sessions ON graphs.session_id = sessions.id", db)
 
@@ -67,7 +67,7 @@ app.layout = html.Div([
 
     html.Br(),
     html.Br(),
-    html.Div(id='bar-container'),
+    html.Div(id='line-container'),
     html.Div(id='choromap-container')
 
 ])
@@ -76,7 +76,7 @@ app.layout = html.Div([
 # -------------------------------------------------------------------------------------
 # Create line chart
 @app.callback(
-    Output(component_id='bar-container', component_property='children'),
+    Output(component_id='line-container', component_property='children'),
     [Input(component_id='datatable-interactivity', component_property="derived_virtual_data"),
      Input(component_id='datatable-interactivity', component_property='derived_virtual_selected_rows'),
      Input(component_id='datatable-interactivity', component_property='derived_virtual_selected_row_ids'),
@@ -89,7 +89,7 @@ app.layout = html.Div([
 def update_bar(all_rows_data, slctd_row_indices, slct_rows_names, slctd_rows,
                order_of_rows_indices, order_of_rows_names, actv_cell, slctd_cell):
     print('***************************************************************************')
-    print('Data across all pages pre or post filtering: {}'.format(all_rows_data))
+    #print('Data across all pages pre or post filtering: {}'.format(all_rows_data))
     print('---------------------------------------------')
     print("Indices of selected rows if part of table after filtering:{}".format(slctd_row_indices))
     print("Names of selected rows if part of table after filtering: {}".format(slct_rows_names))
@@ -101,13 +101,13 @@ def update_bar(all_rows_data, slctd_row_indices, slct_rows_names, slctd_rows,
     print("Complete data of active cell: {}".format(actv_cell))
     print("Complete data of all selected cells: {}".format(slctd_cell))
 
-    dff = pd.DataFrame(slctd_rows)
+    dff = pd.DataFrame(all_rows_data)
 
     # Create empty multiple graph plotly opject
     
 
     # Add selected rows traces to figure
-    fig = add_traces_to_fig(dff)
+    fig = add_traces_to_fig(dff, slctd_rows)
 
     
     return [
