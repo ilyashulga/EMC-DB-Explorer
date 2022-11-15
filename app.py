@@ -28,10 +28,12 @@ app = Dash(__name__, prevent_initial_callbacks=True)
 
 #fig = generate_graph(df1, "test")
 
-df2 = pd.read_sql("SELECT users.username, graphs.timestamp, sessions.name, sessions.description, graphs.model, graphs.layout, graphs.is_cl, graphs.v_in, graphs.v_out, graphs.i_in, graphs.i_load, graphs.dc, graphs.power, graphs.is_final, sessions.folder, graphs.filename FROM graphs JOIN users ON sessions.user_id = users.id JOIN sessions ON graphs.session_id = sessions.id", db)
+df2 = pd.read_sql("SELECT users.username, graphs.timestamp, sessions.name, sessions.description, graphs.model, graphs.layout, graphs.is_cl, graphs.mode, graphs.v_in, graphs.v_out, graphs.i_in, graphs.i_load, graphs.dc, graphs.power, graphs.is_final, sessions.folder, graphs.filename, graphs.comment FROM graphs JOIN users ON sessions.user_id = users.id JOIN sessions ON graphs.session_id = sessions.id", db)
 
 #df2.to_csv('plotter_db.csv')
-print(df2.head())
+#print(df2.head())
+
+dff_first_load = pd.DataFrame(df2)
 
 # Sorting operators (https://dash.plotly.com/datatable/filtering)
 app.layout = html.Div([
@@ -40,7 +42,7 @@ app.layout = html.Div([
         columns=[
             {"name": i, "id": i, "deletable": True, "selectable": True, "hideable": True}
             if i == "username" or i == "timestamp" or i == "name" or i == "description" or i == "folder" or i == "filename"
-             else {"name": i, "id": i, "deletable": True, "selectable": True}
+            else {"name": i, "id": i, "deletable": True, "selectable": True}
             for i in df2.columns
         ],
         data=df2.to_dict('records'),  # the contents of the table
@@ -89,7 +91,7 @@ app.layout = html.Div([
 def update_bar(all_rows_data, slctd_row_indices, slct_rows_names, slctd_rows,
                order_of_rows_indices, order_of_rows_names, actv_cell, slctd_cell):
     print('***************************************************************************')
-    #print('Data across all pages pre or post filtering: {}'.format(all_rows_data))
+    print('Data across all pages pre or post filtering: {}'.format(all_rows_data))
     print('---------------------------------------------')
     print("Indices of selected rows if part of table after filtering:{}".format(slctd_row_indices))
     print("Names of selected rows if part of table after filtering: {}".format(slct_rows_names))
@@ -101,10 +103,13 @@ def update_bar(all_rows_data, slctd_row_indices, slct_rows_names, slctd_rows,
     print("Complete data of active cell: {}".format(actv_cell))
     print("Complete data of all selected cells: {}".format(slctd_cell))
 
+    
+    if slctd_rows is None:
+        slctd_rows = []
+
+
     dff = pd.DataFrame(all_rows_data)
 
-    # Create empty multiple graph plotly opject
-    
 
     # Add selected rows traces to figure
     fig = add_traces_to_fig(dff, slctd_rows)

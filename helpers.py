@@ -40,11 +40,11 @@ def add_traces_to_fig(dff, slctd_rows):
     for index, row in enumerate(dff):
         if index in slctd_rows:
             # Read csv at location specified in each row (folder + filename) - begin with local
-            print(os.path.join(os.path.abspath(os.path.dirname(__file__)), dff.at[row,'folder'], dff.at[row,'filename']))
-            try:
-                df_traces = pd.read_csv(os.path.join(os.path.abspath(os.path.dirname(__file__)), row['folder'], row['filename']), skiprows=18)
-            except:
-                return print("Error reading traces csv file")
+            #print(os.path.join(os.path.abspath(os.path.dirname(__file__)), dff.at[index,'folder'], dff.at[index,'filename']))
+            
+            df_traces = pd.read_csv(os.path.join(os.path.abspath(os.path.dirname(__file__)), dff.at[index,'folder'], dff.at[index,'filename']), skiprows=18)
+            
+            #return print("Error reading traces csv file")
             # Change column names in dataframe to more intuitive
             df_traces.columns = ['Frequency[MHz]','Max(Ver,Hor)', 'Ver', 'Hor']
             # Iterate over each file's rows and make required calculations/substitutions
@@ -52,7 +52,7 @@ def add_traces_to_fig(dff, slctd_rows):
                 df_traces.at[freq,'Max(Ver,Hor)'] = max(df_traces.at[freq,'Hor'], df_traces.at[freq,'Ver'])
                 df_traces.at[freq,'Frequency[MHz]'] = df_traces.at[freq,'Frequency[MHz]']/1000000
             # create xy chart using plotly library
-            graph_name = dff.at[row,'model'] + ' ' + dff.at[row,'layout'] + ' ' + dff.at[row,'cl_ol'] + ' ' + dff.at[row,'mode'] + ' ' + dff.at[row,'user_comment']
+            graph_name = dff.at[index,'model'] + ' ' + dff.at[index,'layout'] + ' ' + ('CL' if dff.at[index, 'is_cl'] else 'OL') + ' ' + dff.at[index,'mode'] + ' ' + str(dff.at[index,'power']) + 'W ' + dff.at[index,'comment']
             fig.add_trace(go.Scatter(x=df_traces["Frequency[MHz]"], y=df_traces["Max(Ver,Hor)"], name=graph_name, mode="lines")) 
 
             # Change x-axis to log scale
