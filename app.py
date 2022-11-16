@@ -20,6 +20,8 @@ app = Dash(__name__, prevent_initial_callbacks=True)
 # Read csv content with pandas into dataframe starting from row 18 (otherwise pandas can't read properly the data)
 #filename = "All_Traces.csv"
 
+# Create an empty dataframe for storing results table data (full table)
+dff = pd.DataFrame()
 
 #df1 = pd.read_csv(os.path.join(filename), skiprows=18)
 
@@ -103,12 +105,13 @@ def update_bar(all_rows_data, slctd_row_indices, slct_rows_names, slctd_rows,
     print("Complete data of active cell: {}".format(actv_cell))
     print("Complete data of all selected cells: {}".format(slctd_cell))
 
+    global dff
     
     if slctd_rows is None:
         slctd_rows = []
 
-
-    dff = pd.DataFrame(all_rows_data)
+    if dff.empty:
+        dff = pd.DataFrame(all_rows_data)
 
 
     # Add selected rows traces to figure
