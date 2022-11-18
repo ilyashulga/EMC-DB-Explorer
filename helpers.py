@@ -1,4 +1,5 @@
 import os
+from sqlite3 import connect
 import json
 import pandas as pd
 import plotly.express as px
@@ -120,3 +121,17 @@ def add_trace_to_fig(dff, added, fig):
     graph_name = dff.at[added[0],'model'] + ' ' + dff.at[added[0],'layout'] + ' ' + ('CL' if dff.at[added[0], 'is_cl'] else 'OL') + ' ' + dff.at[added[0],'mode'] + ' ' + str(dff.at[added[0],'power']) + 'W ' + dff.at[added[0],'comment']
     fig.add_trace(go.Scatter(x=df_traces["Frequency[MHz]"], y=df_traces["Max(Ver,Hor)"], name=graph_name, mode="lines"))
     return fig
+
+
+def reload_data_from_db(db_location):
+    # Configure standard SQLite3
+    db = connect(db_location)
+    print('Connected to db')
+    
+    # Read plotter.db database into a dataframe
+    df = pd.read_sql("SELECT users.username, graphs.timestamp, sessions.name, sessions.description, graphs.model, graphs.layout, graphs.is_cl, graphs.mode, graphs.v_in, graphs.v_out, graphs.i_in, graphs.i_load, graphs.dc, graphs.power, graphs.is_final, sessions.folder, graphs.filename, graphs.comment FROM graphs JOIN users ON sessions.user_id = users.id JOIN sessions ON graphs.session_id = sessions.id", db)
+    df = df.rename(columns={'name': 'session'})
+    # Close connection to plotter.db (the data read only once)
+    db.close()
+
+    return df
