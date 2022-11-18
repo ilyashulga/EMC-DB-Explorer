@@ -23,6 +23,7 @@ def generate_graph(df, graph_title):
 
 def add_traces_to_fig(dff, slctd_rows):
     
+    
     fig = go.Figure()
     
     # Read Limits.csv content with pandas into dataframe and add to graphs figure
@@ -55,33 +56,33 @@ def add_traces_to_fig(dff, slctd_rows):
             graph_name = dff.at[index,'model'] + ' ' + dff.at[index,'layout'] + ' ' + ('CL' if dff.at[index, 'is_cl'] else 'OL') + ' ' + dff.at[index,'mode'] + ' ' + str(dff.at[index,'power']) + 'W ' + dff.at[index,'comment']
             fig.add_trace(go.Scatter(x=df_traces["Frequency[MHz]"], y=df_traces["Max(Ver,Hor)"], name=graph_name, mode="lines")) 
 
-            # Change x-axis to log scale
-            fig.update_xaxes(type="log")
-            fig.update_xaxes(title_text='Frequency [MHz]',
-                                title_font = {"size": 20},
-                                title_standoff = 0)
-            fig.update_yaxes(title_text='dBuV/m',
-                                title_font = {"size": 20},
-                                title_standoff = 5)
-            fig.update_layout(#autosize=False,
-                                minreducedwidth=250,
-                                minreducedheight=500,
-                                #width=1500,
-                                height=700,
-                                legend=dict(
-                                    #yanchor="top",
-                                    y=-0.3,
-                                    #xanchor="left",
-                                    #x=0.01,
-                                    orientation='h'
-                                    ),
-                                title={
-                                    'text': "Radiated Emission",
-                                    'y':0.9,
-                                    'x':0.5,
-                                    'xanchor': 'center',
-                                    'yanchor': 'top'}
-                                )
+    # Change x-axis to log scale
+    fig.update_xaxes(type="log")
+    fig.update_xaxes(title_text='Frequency [MHz]',
+                        title_font = {"size": 20},
+                        title_standoff = 0)
+    fig.update_yaxes(title_text='dBuV/m',
+                        title_font = {"size": 20},
+                        title_standoff = 5)
+    fig.update_layout(#autosize=False,
+                        minreducedwidth=250,
+                        minreducedheight=500,
+                        #width=1500,
+                        height=700,
+                        legend=dict(
+                            #yanchor="top",
+                            y=-0.3,
+                            #xanchor="left",
+                            #x=0.01,
+                            orientation='h'
+                            ),
+                        title={
+                            'text': "Radiated Emission",
+                            'y':0.9,
+                            'x':0.5,
+                            'xanchor': 'center',
+                            'yanchor': 'top'}
+                        )
 
     return fig 
 
@@ -98,3 +99,22 @@ def generate_table(dataframe, max_rows):
     ])
 
 
+def diff_set(before, after):
+    b, a = set(before), set(after)
+    return list(a - b), list(b - a), list(a & b)
+
+
+
+def add_trace_to_fig(dff, added, fig):
+    
+    df_traces = pd.read_csv(os.path.join(os.path.abspath(os.path.dirname(__file__)), dff.at[added[0],'folder'], dff.at[added[0],'filename']), skiprows=18)
+    # Change column names in dataframe to more intuitive
+    df_traces.columns = ['Frequency[MHz]','Max(Ver,Hor)', 'Ver', 'Hor']
+    # Iterate over each file's rows and make required calculations/substitutions
+    for freq in range(len(df_traces)):
+        df_traces.at[freq,'Max(Ver,Hor)'] = max(df_traces.at[freq,'Hor'], df_traces.at[freq,'Ver'])
+        df_traces.at[freq,'Frequency[MHz]'] = df_traces.at[freq,'Frequency[MHz]']/1000000
+    # create xy chart using plotly library
+    graph_name = dff.at[added[0],'model'] + ' ' + dff.at[added[0],'layout'] + ' ' + ('CL' if dff.at[added[0], 'is_cl'] else 'OL') + ' ' + dff.at[added[0],'mode'] + ' ' + str(dff.at[added[0],'power']) + 'W ' + dff.at[added[0],'comment']
+    fig.add_trace(go.Scatter(x=df_traces["Frequency[MHz]"], y=df_traces["Max(Ver,Hor)"], name=graph_name, mode="lines"))
+    return fig

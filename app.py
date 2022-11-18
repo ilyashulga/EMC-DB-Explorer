@@ -8,7 +8,7 @@ import pandas as pd
 import os
 import plotly.graph_objects as go
 
-from helpers import generate_graph, generate_table, add_traces_to_fig
+from helpers import generate_graph, generate_table, add_traces_to_fig, diff_set, add_trace_to_fig
 
 
 # Configure standard SQLite3
@@ -16,13 +16,15 @@ db = connect("plotter.db")
 
 # App layout
 app = Dash(__name__, prevent_initial_callbacks=True)
+#app = Dash(__name__)
 
 # Read csv content with pandas into dataframe starting from row 18 (otherwise pandas can't read properly the data)
 #filename = "All_Traces.csv"
 
 # Create an empty dataframe for storing results table data (full table)
 dff = pd.DataFrame()
-
+slctd_rows_prev = []
+fig = go.Figure()
 #df1 = pd.read_csv(os.path.join(filename), skiprows=18)
 
 # Change column names in dataframe to more intuitive
@@ -82,41 +84,64 @@ app.layout = html.Div([
 @app.callback(
     Output(component_id='line-container', component_property='children'),
     [Input(component_id='datatable-interactivity', component_property="derived_virtual_data"),
-     Input(component_id='datatable-interactivity', component_property='derived_virtual_selected_rows'),
-     Input(component_id='datatable-interactivity', component_property='derived_virtual_selected_row_ids'),
-     Input(component_id='datatable-interactivity', component_property='selected_rows'),
-     Input(component_id='datatable-interactivity', component_property='derived_virtual_indices'),
-     Input(component_id='datatable-interactivity', component_property='derived_virtual_row_ids'),
-     Input(component_id='datatable-interactivity', component_property='active_cell'),
-     Input(component_id='datatable-interactivity', component_property='selected_cells')]
+     #Input(component_id='datatable-interactivity', component_property='derived_virtual_selected_rows'),
+     #Input(component_id='datatable-interactivity', component_property='derived_virtual_selected_row_ids'),
+     Input(component_id='datatable-interactivity', component_property='selected_rows')
+     #Input(component_id='datatable-interactivity', component_property='derived_virtual_indices'),
+     #Input(component_id='datatable-interactivity', component_property='derived_virtual_row_ids'),
+     #Input(component_id='datatable-interactivity', component_property='active_cell'),
+     #Input(component_id='datatable-interactivity', component_property='selected_cells')
+     ]
 )
-def update_bar(all_rows_data, slctd_row_indices, slct_rows_names, slctd_rows,
-               order_of_rows_indices, order_of_rows_names, actv_cell, slctd_cell):
+#def update_bar(all_rows_data, slctd_row_indices, slct_rows_names, slctd_rows,
+               #order_of_rows_indices, order_of_rows_names, actv_cell, slctd_cell):
+def update_bar(all_rows_data, slctd_rows):
     print('***************************************************************************')
-    print('Data across all pages pre or post filtering: {}'.format(all_rows_data))
-    print('---------------------------------------------')
-    print("Indices of selected rows if part of table after filtering:{}".format(slctd_row_indices))
-    print("Names of selected rows if part of table after filtering: {}".format(slct_rows_names))
-    print("Indices of selected rows regardless of filtering results: {}".format(slctd_rows))
-    print('---------------------------------------------')
-    print("Indices of all rows pre or post filtering: {}".format(order_of_rows_indices))
-    print("Names of all rows pre or post filtering: {}".format(order_of_rows_names))
-    print("---------------------------------------------")
-    print("Complete data of active cell: {}".format(actv_cell))
-    print("Complete data of all selected cells: {}".format(slctd_cell))
+    #print('Data across all pages pre or post filtering: {}'.format(all_rows_data))
+    #print('---------------------------------------------')
+    #print("Indices of selected rows if part of table after filtering:{}".format(slctd_row_indices))
+    #print("Names of selected rows if part of table after filtering: {}".format(slct_rows_names))
+    #print("Indices of selected rows regardless of filtering results: {}".format(slctd_rows))
+    #print('---------------------------------------------')
+    #print("Indices of all rows pre or post filtering: {}".format(order_of_rows_indices))
+    #print("Names of all rows pre or post filtering: {}".format(order_of_rows_names))
+    #print("---------------------------------------------")
+    #print("Complete data of active cell: {}".format(actv_cell))
+    #print("Complete data of all selected cells: {}".format(slctd_cell))
 
+    print("Callback called")
     global dff
+    global slctd_rows_prev
+    global fig
     
     if slctd_rows is None:
         slctd_rows = []
-
+    
+    # On first callback, plot empty figure with limits
     if dff.empty:
         dff = pd.DataFrame(all_rows_data)
+        fig = add_traces_to_fig(dff, slctd_rows)
+    elif slctd_rows == []:
+        fig = add_traces_to_fig(dff, slctd_rows)
 
+    added, removed, common = diff_set(slctd_rows_prev, slctd_rows)
+    print('Selected rows' + str(slctd_rows))
+    if added:
+        fig = add_trace_to_fig(dff, added, fig)
+    elif removed:
+        #fig.data = []
+        fig = go.Figure()
+        fig = add_traces_to_fig(dff, slctd_rows)
 
-    # Add selected rows traces to figure
-    fig = add_traces_to_fig(dff, slctd_rows)
-
+    print('Added rows:' + str(added))
+    print('Removed selected rows:' + str(removed))
+    print('Common selected rows:' + str(common))
+    
+    # Save previous selection state
+    slctd_rows_prev = slctd_rows.copy()
+    
+    
+    
     
     return [
             dcc.Graph(id='line-chart',
