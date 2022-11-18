@@ -13,43 +13,32 @@ from helpers import generate_graph, generate_table, add_traces_to_fig, diff_set,
 
 # Configure standard SQLite3
 db = connect("plotter.db")
-
+print('Connected to db')
 # App layout
 app = Dash(__name__, prevent_initial_callbacks=True)
-#app = Dash(__name__)
 
-# Read csv content with pandas into dataframe starting from row 18 (otherwise pandas can't read properly the data)
-#filename = "All_Traces.csv"
-
-# Create an empty dataframe for storing results table data (full table)
+# Create variables to store callback variables (declared as global in the callback function)
 dff = pd.DataFrame()
 slctd_rows_prev = []
 fig = go.Figure()
-#df1 = pd.read_csv(os.path.join(filename), skiprows=18)
 
-# Change column names in dataframe to more intuitive
-#df1.columns = ['Frequency[MHz]','Max(Ver,Hor)', 'Ver', 'Hor']
+# Read plotter.db database into a dataframe
+df = pd.read_sql("SELECT users.username, graphs.timestamp, sessions.name, sessions.description, graphs.model, graphs.layout, graphs.is_cl, graphs.mode, graphs.v_in, graphs.v_out, graphs.i_in, graphs.i_load, graphs.dc, graphs.power, graphs.is_final, sessions.folder, graphs.filename, graphs.comment FROM graphs JOIN users ON sessions.user_id = users.id JOIN sessions ON graphs.session_id = sessions.id", db)
 
-#fig = generate_graph(df1, "test")
-
-df2 = pd.read_sql("SELECT users.username, graphs.timestamp, sessions.name, sessions.description, graphs.model, graphs.layout, graphs.is_cl, graphs.mode, graphs.v_in, graphs.v_out, graphs.i_in, graphs.i_load, graphs.dc, graphs.power, graphs.is_final, sessions.folder, graphs.filename, graphs.comment FROM graphs JOIN users ON sessions.user_id = users.id JOIN sessions ON graphs.session_id = sessions.id", db)
-
-#df2.to_csv('plotter_db.csv')
-#print(df2.head())
-
-dff_first_load = pd.DataFrame(df2)
+# Close connection to plotter.db (the data read only once)
+db.close()
 
 # Sorting operators (https://dash.plotly.com/datatable/filtering)
-app.layout = html.Div([
+app.layout = html.Div([html.Div(id='line-container'),
     dash_table.DataTable(
         id='datatable-interactivity',
         columns=[
             {"name": i, "id": i, "deletable": True, "selectable": True, "hideable": True}
             if i == "username" or i == "timestamp" or i == "name" or i == "description" or i == "folder" or i == "filename"
             else {"name": i, "id": i, "deletable": True, "selectable": True}
-            for i in df2.columns
+            for i in df.columns
         ],
-        data=df2.to_dict('records'),  # the contents of the table
+        data=df.to_dict('records'),  # the contents of the table
         editable=True,              # allow editing of data inside all cells
         filter_action="native",     # allow filtering of data by user ('native') or not ('none')
         sort_action="native",       # enables data to be sorted per-column by user or not ('none')
@@ -73,7 +62,6 @@ app.layout = html.Div([
 
     html.Br(),
     html.Br(),
-    html.Div(id='line-container'),
     html.Div(id='choromap-container')
 
 ])
@@ -96,7 +84,7 @@ app.layout = html.Div([
 #def update_bar(all_rows_data, slctd_row_indices, slct_rows_names, slctd_rows,
                #order_of_rows_indices, order_of_rows_names, actv_cell, slctd_cell):
 def update_bar(all_rows_data, slctd_rows):
-    print('***************************************************************************')
+    #print('***************************************************************************')
     #print('Data across all pages pre or post filtering: {}'.format(all_rows_data))
     #print('---------------------------------------------')
     #print("Indices of selected rows if part of table after filtering:{}".format(slctd_row_indices))
@@ -109,33 +97,35 @@ def update_bar(all_rows_data, slctd_rows):
     #print("Complete data of active cell: {}".format(actv_cell))
     #print("Complete data of all selected cells: {}".format(slctd_cell))
 
-    print("Callback called")
+
+
+    # Declare global variable dff (needed because we don't want to reload the data from rows on each callback + all_rows_data effected by filtering and we want to keep original table to be able to keep plotted data before filter was applied)
     global dff
+    
+    # Decare global variable to keep previous scltd_rows state (this is needed in order to no redraw all traces on each callback but to add new selected plot to existing figure)
     global slctd_rows_prev
+
+    # Declare global variable for figure (needed to eliminate "referenced before asignment" error)
     global fig
     
     if slctd_rows is None:
         slctd_rows = []
     
-    # On first callback, plot empty figure with limits
+    # On first callback, store table data into pandas dataframe and plot empty figure with limits
     if dff.empty:
         dff = pd.DataFrame(all_rows_data)
         fig = add_traces_to_fig(dff, slctd_rows)
-    elif slctd_rows == []:
+    elif slctd_rows == []: # is selecter rows list is empty - plot empty figure with limits only (no need to re-load table data into dataframe)
         fig = add_traces_to_fig(dff, slctd_rows)
 
+    # Check what rows selection updates between previous callback and current callback selected rows list
     added, removed, common = diff_set(slctd_rows_prev, slctd_rows)
-    print('Selected rows' + str(slctd_rows))
+    
+    # If new row were selected - add it to the existing figure
     if added:
         fig = add_trace_to_fig(dff, added, fig)
-    elif removed:
-        #fig.data = []
-        fig = go.Figure()
+    elif removed: # If row removed - replot figure completely (I have not found easy way to remove specific plots from graphs figure)
         fig = add_traces_to_fig(dff, slctd_rows)
-
-    print('Added rows:' + str(added))
-    print('Removed selected rows:' + str(removed))
-    print('Common selected rows:' + str(common))
     
     # Save previous selection state
     slctd_rows_prev = slctd_rows.copy()

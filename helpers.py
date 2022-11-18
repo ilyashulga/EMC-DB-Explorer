@@ -38,8 +38,10 @@ def add_traces_to_fig(dff, slctd_rows):
     fig.add_trace(go.Scatter(x=df_limits["Frequency[MHz]"], y=df_limits["CISPR11_RE_CLASS_B_Group_1_Important"], name=graph_name, mode="lines"))
     
     # Iterate over each row in selected_rows dataframe
-    for index, row in enumerate(dff):
+    for index, row in dff.iterrows():
+        #print(index)
         if index in slctd_rows:
+            #print(index)
             # Read csv at location specified in each row (folder + filename) - begin with local
             #print(os.path.join(os.path.abspath(os.path.dirname(__file__)), dff.at[index,'folder'], dff.at[index,'filename']))
             
@@ -78,7 +80,7 @@ def add_traces_to_fig(dff, slctd_rows):
                             ),
                         title={
                             'text': "Radiated Emission",
-                            'y':0.9,
+                            'y':0.95,
                             'x':0.5,
                             'xanchor': 'center',
                             'yanchor': 'top'}
