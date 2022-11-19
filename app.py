@@ -141,7 +141,7 @@ def update_bar(all_rows_data, slctd_rows):
         fig = add_traces_to_fig(dff, slctd_rows, path_to_emc_plotter_db)
     elif slctd_rows == []: # if selecter rows list is empty - plot empty figure with limits only (no need to re-load table data into dataframe)
         df = reload_data_from_db(path_to_emc_plotter_db + db_name) # refresh table data on first load or when no slected rows in column
-        dff = pd.DataFrame(all_rows_data)
+        #dff = pd.DataFrame(all_rows_data)
         fig = add_traces_to_fig(dff, slctd_rows, path_to_emc_plotter_db)
 
     # Check what rows selection updates between previous callback and current callback selected rows list
