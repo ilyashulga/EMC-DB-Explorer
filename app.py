@@ -10,7 +10,7 @@ from helpers import generate_graph, generate_table, add_traces_to_fig, diff_set,
 
 # Path to database created in EMC Plotter DB
 db_name = 'plotter.db'
-path_to_emc_plotter_db = '/mnt/c/Users/bende/Desktop/My_codespace/EMC-Plotter-DB/'
+path_to_emc_plotter_db = '/home/ilya.s/EMC_Plotter_DB.git/cs50_final_project/'
 
 # App layout
 app = Dash(__name__, prevent_initial_callbacks=True)
