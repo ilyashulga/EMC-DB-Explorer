@@ -9,7 +9,8 @@ import plotly.graph_objects as go
 from helpers import generate_graph, generate_table, add_traces_to_fig, diff_set, add_trace_to_fig, reload_data_from_db
 
 # Path to database created in EMC Plotter DB
-db_location = 'plotter.db'
+db_name = 'plotter.db'
+path_to_emc_plotter_db = '/mnt/c/Users/bende/Desktop/My_codespace/EMC-Plotter-DB/'
 
 # App layout
 app = Dash(__name__, prevent_initial_callbacks=True)
@@ -20,11 +21,10 @@ slctd_rows_prev = []
 fig = go.Figure()
 
 # Connect to plotter.db and read  it into a dataframe
-df = reload_data_from_db(db_location)
+df = reload_data_from_db(path_to_emc_plotter_db + db_name)
 
 # Sorting operators (https://dash.plotly.com/datatable/filtering)
 app.layout = html.Div([html.Div(id='line-container'),
-    dcc.Loading(id='loading'),
     dash_table.DataTable(
         id='datatable-interactivity',
         columns=[
@@ -90,7 +90,8 @@ app.layout = html.Div([html.Div(id='line-container'),
 # -------------------------------------------------------------------------------------
 # Create line chart
 @app.callback(
-    Output(component_id='line-container', component_property='children'),
+    [Output(component_id='line-container', component_property='children'),
+    Output(component_id='datatable-interactivity', component_property='data')],
     [Input(component_id='datatable-interactivity', component_property="derived_virtual_data"),
      #Input(component_id='datatable-interactivity', component_property='derived_virtual_selected_rows'),
      #Input(component_id='datatable-interactivity', component_property='derived_virtual_selected_row_ids'),
@@ -119,7 +120,8 @@ def update_bar(all_rows_data, slctd_rows):
 
     # Declare global variable for storing SQL plotter.db contents
     global df
-    global db_location
+    global db_name
+    global path_to_emc_plotter_db
 
     # Declare global variable dff for storing table data (needed because we don't want to reload the data from rows on each callback + all_rows_data effected by filtering and we want to keep original table to be able to keep plotted data before filter was applied)
     global dff
@@ -136,27 +138,26 @@ def update_bar(all_rows_data, slctd_rows):
     # On first callback, store table data into pandas dataframe and plot empty figure with limits
     if dff.empty:
         dff = pd.DataFrame(all_rows_data)
-        fig = add_traces_to_fig(dff, slctd_rows)
+        fig = add_traces_to_fig(dff, slctd_rows, path_to_emc_plotter_db)
     elif slctd_rows == []: # if selecter rows list is empty - plot empty figure with limits only (no need to re-load table data into dataframe)
-        df = reload_data_from_db(db_location) # refresh table data on first load or when no slected rows in column
-        fig = add_traces_to_fig(dff, slctd_rows)
+        df = reload_data_from_db(path_to_emc_plotter_db + db_name) # refresh table data on first load or when no slected rows in column
+        dff = pd.DataFrame(all_rows_data)
+        fig = add_traces_to_fig(dff, slctd_rows, path_to_emc_plotter_db)
 
     # Check what rows selection updates between previous callback and current callback selected rows list
     added, removed, common = diff_set(slctd_rows_prev, slctd_rows)
     
     # If new row were selected - add it to the existing figure
     if added:
-        fig = add_trace_to_fig(dff, added, fig)
+        fig = add_trace_to_fig(dff, added, fig, path_to_emc_plotter_db)
     elif removed: # If row removed - replot figure completely (I have not found easy way to remove specific plots from graphs figure)
-        fig = add_traces_to_fig(dff, slctd_rows)
+        fig = add_traces_to_fig(dff, slctd_rows, path_to_emc_plotter_db)
     
     # Save previous selection state
     slctd_rows_prev = slctd_rows.copy()
     
-    return [
-            dcc.Graph(id='line-chart',
-                      figure=fig)
-        ]
+    # Return graph object with figure and updated table data
+    return [dcc.Graph(id='line-chart', figure=fig)], df.to_dict('records')
 
 # -------------------------------------------------------------------------------------
 

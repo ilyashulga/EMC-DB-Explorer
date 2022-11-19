@@ -22,7 +22,7 @@ def generate_graph(df, graph_title):
 
     return fig
 
-def add_traces_to_fig(dff, slctd_rows):
+def add_traces_to_fig(dff, slctd_rows, path_to_emc_plotter_db):
     
     
     fig = go.Figure()
@@ -46,7 +46,8 @@ def add_traces_to_fig(dff, slctd_rows):
             # Read csv at location specified in each row (folder + filename) - begin with local
             #print(os.path.join(os.path.abspath(os.path.dirname(__file__)), dff.at[index,'folder'], dff.at[index,'filename']))
             
-            df_traces = pd.read_csv(os.path.join(os.path.abspath(os.path.dirname(__file__)), dff.at[index,'folder'], dff.at[index,'filename']), skiprows=18)
+            #df_traces = pd.read_csv(os.path.join(os.path.abspath(os.path.dirname(__file__)), dff.at[index,'folder'], dff.at[index,'filename']), skiprows=18)
+            df_traces = pd.read_csv(os.path.join(path_to_emc_plotter_db, dff.at[index,'folder'], dff.at[index,'filename']), skiprows=18)
             
             #return print("Error reading traces csv file")
             # Change column names in dataframe to more intuitive
@@ -68,6 +69,9 @@ def add_traces_to_fig(dff, slctd_rows):
                         title_font = {"size": 20},
                         title_standoff = 5)
     fig.update_layout(#autosize=False,
+                        #hovermode='x',
+                        hoverlabel_namelength=-1, # Needed to not shorten the name of the trace on hoover (together with hoverinfo='text' in fig.add_trace(go.Scatter... above)
+                        hovermode="x unified",
                         minreducedwidth=250,
                         minreducedheight=500,
                         #width=1500,
@@ -108,9 +112,10 @@ def diff_set(before, after):
 
 
 
-def add_trace_to_fig(dff, added, fig):
+def add_trace_to_fig(dff, added, fig, path_to_emc_plotter_db):
     
-    df_traces = pd.read_csv(os.path.join(os.path.abspath(os.path.dirname(__file__)), dff.at[added[0],'folder'], dff.at[added[0],'filename']), skiprows=18)
+    #df_traces = pd.read_csv(os.path.join(os.path.abspath(os.path.dirname(__file__)), dff.at[added[0],'folder'], dff.at[added[0],'filename']), skiprows=18)
+    df_traces = pd.read_csv(os.path.join(path_to_emc_plotter_db, dff.at[added[0],'folder'], dff.at[added[0],'filename']), skiprows=18)
     # Change column names in dataframe to more intuitive
     df_traces.columns = ['Frequency[MHz]','Max(Ver,Hor)', 'Ver', 'Hor']
     # Iterate over each file's rows and make required calculations/substitutions
@@ -126,12 +131,14 @@ def add_trace_to_fig(dff, added, fig):
 def reload_data_from_db(db_location):
     # Configure standard SQLite3
     db = connect(db_location)
-    print('Connected to db')
+    #print('Connected to db:' + str(db_location))
     
     # Read plotter.db database into a dataframe
     df = pd.read_sql("SELECT users.username, graphs.timestamp, sessions.name, sessions.description, graphs.model, graphs.layout, graphs.is_cl, graphs.mode, graphs.v_in, graphs.v_out, graphs.i_in, graphs.i_load, graphs.dc, graphs.power, graphs.is_final, sessions.folder, graphs.filename, graphs.comment FROM graphs JOIN users ON sessions.user_id = users.id JOIN sessions ON graphs.session_id = sessions.id", db)
     df = df.rename(columns={'name': 'session'})
-    # Close connection to plotter.db (the data read only once)
+    #print(df.tail(10))
+    
+    # Close connection to plotter.db 
     db.close()
 
     return df
