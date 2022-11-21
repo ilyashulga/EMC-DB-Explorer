@@ -1,6 +1,6 @@
 from dash.dependencies import Input, Output
 from cs50 import SQL
-from dash import Dash, html, dash_table, dcc
+from dash import Dash, html, dash_table, dcc, ctx
 import plotly.express as px
 import pandas as pd
 import os
@@ -82,7 +82,9 @@ app.layout = html.Div([html.Div(id='line-container'),
 
     html.Br(),
     html.Br(),
-    html.Div(id='choromap-container')
+    html.Div(id='choromap-container'),
+    html.Button("Update Table from Database", id="update_table"),
+    html.P(id='placeholder')
 
 ])
 
@@ -95,7 +97,7 @@ app.layout = html.Div([html.Div(id='line-container'),
     [Input(component_id='datatable-interactivity', component_property="derived_virtual_data"),
      #Input(component_id='datatable-interactivity', component_property='derived_virtual_selected_rows'),
      #Input(component_id='datatable-interactivity', component_property='derived_virtual_selected_row_ids'),
-     Input(component_id='datatable-interactivity', component_property='selected_rows')
+     Input(component_id='datatable-interactivity', component_property="selected_rows")
      #Input(component_id='datatable-interactivity', component_property='derived_virtual_indices'),
      #Input(component_id='datatable-interactivity', component_property='derived_virtual_row_ids'),
      #Input(component_id='datatable-interactivity', component_property='active_cell'),
@@ -132,6 +134,7 @@ def update_bar(all_rows_data, slctd_rows):
     # Declare global variable for figure (needed to eliminate "referenced before asignment" error)
     global fig
     
+
     if slctd_rows is None:
         slctd_rows = []
     
@@ -160,6 +163,18 @@ def update_bar(all_rows_data, slctd_rows):
     return [dcc.Graph(id='line-chart', figure=fig)], df.to_dict('records')
 
 # -------------------------------------------------------------------------------------
+
+# Callback to reload rows data from database 
+@app.callback(
+    Output("placeholder", "children"),
+    Input("update_table", "n_clicks"))
+def update_table(n):
+    global dff
+    # Zero dff dataframe so that main callback with triger if dff is empty condition and relod rows data
+    dff = pd.DataFrame()
+    #print("button press")
+    
+    return " Success! "
 
 if __name__ == '__main__':
     #app.run_server(debug=True)
