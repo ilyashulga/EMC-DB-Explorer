@@ -137,7 +137,10 @@ def update_bar(all_rows_data, slctd_rows):
 
     if slctd_rows is None:
         slctd_rows = []
-    
+
+    # Check what rows selection updates between previous callback and current callback selected rows list
+    added, removed, common = diff_set(slctd_rows_prev, slctd_rows)
+
     # On first callback, store table data into pandas dataframe and plot empty figure with limits
     if dff.empty:
         dff = pd.DataFrame(all_rows_data)
@@ -146,12 +149,8 @@ def update_bar(all_rows_data, slctd_rows):
         df = reload_data_from_db(path_to_emc_plotter_db + db_name) # refresh table data on first load or when no slected rows in column
         #dff = pd.DataFrame(all_rows_data)
         fig = add_traces_to_fig(dff, slctd_rows, path_to_emc_plotter_db)
-
-    # Check what rows selection updates between previous callback and current callback selected rows list
-    added, removed, common = diff_set(slctd_rows_prev, slctd_rows)
-    
     # If new row were selected - add it to the existing figure
-    if added:
+    elif added:
         fig = add_trace_to_fig(dff, added, fig, path_to_emc_plotter_db)
     elif removed: # If row removed - replot figure completely (I have not found easy way to remove specific plots from graphs figure)
         fig = add_traces_to_fig(dff, slctd_rows, path_to_emc_plotter_db)
