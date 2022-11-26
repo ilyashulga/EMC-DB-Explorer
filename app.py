@@ -29,7 +29,7 @@ app.layout = html.Div([html.Div(id='line-container'),
         id='datatable-interactivity',
         columns=[
             {"name": i, "id": i, "deletable": True, "selectable": True, "hideable": True}
-            if i == "username" or i == "timestamp" or i == "name" or i == "description" or i == "folder" or i == "filename"
+            if i == "username" or i == "timestamp" or i == "name" or i == "description" or i == "folder" or i == "filename" or i == "lab"
             else {"name": i, "id": i, "deletable": True, "selectable": True}
             for i in df.columns
         ],
