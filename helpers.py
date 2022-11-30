@@ -141,7 +141,7 @@ def reload_data_from_db(db_location):
     #print('Connected to db:' + str(db_location))
     
     # Read plotter.db database into a dataframe
-    df = pd.read_sql("SELECT users.username, sessions.lab, graphs.timestamp, sessions.name, sessions.description, graphs.model, graphs.layout, graphs.is_cl, graphs.mode, graphs.v_in, graphs.v_out, graphs.i_in, graphs.i_load, graphs.dc, graphs.power, graphs.is_final, sessions.folder, graphs.filename, graphs.comment FROM graphs JOIN users ON sessions.user_id = users.id JOIN sessions ON graphs.session_id = sessions.id", db)
+    df = pd.read_sql("SELECT users.username, sessions.lab, graphs.id, graphs.timestamp, sessions.name, sessions.description, graphs.model, graphs.layout, graphs.is_potted, graphs.is_cl, graphs.mode, graphs.v_in, graphs.v_out, graphs.i_in, graphs.i_load, graphs.dc, graphs.power, graphs.is_final, sessions.folder, graphs.filename, graphs.comment FROM graphs JOIN users ON sessions.user_id = users.id JOIN sessions ON graphs.session_id = sessions.id", db)
     df = df.rename(columns={'name': 'session'})
     #print(df.tail(10))
     

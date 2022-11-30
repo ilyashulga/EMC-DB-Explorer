@@ -59,13 +59,18 @@ app.layout = html.Div([html.Div(id='line-container'),
             }
         ],
         style_cell={                # ensure adequate header width when text is shorter than cell's text
-            'maxWidth': 0, 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'textAlign': 'left'
+            #'maxWidth': 0, 'overflow': 'hidden', 'textOverflow': 'ellipsis', 'textAlign': 'left'
+            'whiteSpace': 'normal', 'height': 'auto', 'textAlign': 'left'
         },
         style_cell_conditional=[
             {'if': {'column_id': 'comment'},
             'width': '15%'},
             {'if': {'column_id': 'description'},
             'width': '15%'},
+            {'if': {'column_id': 'timestamp'},
+            'width': '7%'},
+            {'if': {'column_id': 'session'},
+            'width': '10%'}
         ],
         #style_data={                # overflow cells' content into multiple lines
             #'whiteSpace': 'normal',
