@@ -32,11 +32,13 @@ def add_traces_to_fig(dff, slctd_rows, path_to_emc_plotter_db):
         df_limits = pd.read_csv(os.path.join(os.path.abspath(os.path.dirname(__file__)), "static", "Limits.csv"))
     except:
         return print("Error reading Limits.csv")
-    df_limits.columns = ['Frequency[MHz]','CISPR11_RE_CLASS_B_Group_1', 'CISPR11_RE_CLASS_B_Group_1_Important']
+    df_limits.columns = ['Frequency[MHz]','CISPR11_RE_CLASS_B_Group_1', 'CISPR11_RE_CLASS_B_Group_1_Important', 'CISPR11_RE_CLASS_A_Group_1_up_to_20kVA']
     graph_name = 'Limit: CISPR11 RE CLASS B Group 1'
     fig.add_trace(go.Scatter(x=df_limits["Frequency[MHz]"], y=df_limits["CISPR11_RE_CLASS_B_Group_1"], name=graph_name, mode="lines"))
     graph_name = 'Limit (important): CISPR11 RE CLASS B Group 1'
     fig.add_trace(go.Scatter(x=df_limits["Frequency[MHz]"], y=df_limits["CISPR11_RE_CLASS_B_Group_1_Important"], name=graph_name, mode="lines"))
+    graph_name = 'Limit: CISPR11 RE CLASS A Group 1 <20kVA'
+    fig.add_trace(go.Scatter(x=df_limits["Frequency[MHz]"], y=df_limits["CISPR11_RE_CLASS_A_Group_1_up_to_20kVA"], name=graph_name, mode="lines", visible='legendonly'))
     
     # Iterate over each row in selected_rows dataframe
     for index, row in dff.iterrows():
