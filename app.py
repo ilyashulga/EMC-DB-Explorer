@@ -41,7 +41,7 @@ app.layout = html.Div([html.Div(id='line-container'),
         sort_mode="single",         # sort across 'multi' or 'single' columns
         column_selectable=False,  # allow users to select 'multi' or 'single' columns
         row_selectable="multi",     # allow users to select 'multi' or 'single' rows
-        row_deletable=False,         # choose if user can delete a row (True) or not (False)
+        row_deletable=True,         # choose if user can delete a row (True) or not (False)
         selected_columns=[],        # ids of columns that user selects
         selected_rows=[],           # indices of rows that user selects
         page_action="native",       # all data is passed to the table up-front or not ('none')
@@ -169,16 +169,16 @@ def update_bar(all_rows_data, slctd_rows):
 # -------------------------------------------------------------------------------------
 
 # Callback to reload rows data from database 
-@app.callback(
-    Output("placeholder", "children"),
-    Input("update_table", "n_clicks"))
-def update_table(n):
-    global dff
-    # Zero dff dataframe so that main callback with triger if dff is empty condition and relod rows data
-    dff = pd.DataFrame()
-    #print("button press")
+# @app.callback(
+#     Output("placeholder", "children"),
+#     Input("update_table", "n_clicks"))
+# def update_table(n):
+#     global dff
+#     # Zero dff dataframe so that main callback with triger if dff is empty condition and relod rows data
+#     dff = pd.DataFrame()
+#     #print("button press")
     
-    return " Success! "
+#     return " Success! "
 
 if __name__ == '__main__':
     #app.run_server(debug=True)
