@@ -168,17 +168,17 @@ def update_bar(all_rows_data, slctd_rows):
 
 # -------------------------------------------------------------------------------------
 
-# Callback to reload rows data from database 
-# @app.callback(
-#     Output("placeholder", "children"),
-#     Input("update_table", "n_clicks"))
-# def update_table(n):
-#     global dff
-#     # Zero dff dataframe so that main callback with triger if dff is empty condition and relod rows data
-#     dff = pd.DataFrame()
-#     #print("button press")
+#Callback to reload rows data from database when button is pressed
+@app.callback(
+    Output("placeholder", "children"),
+    Input("update_table", "n_clicks"))
+def update_table(n):
+    global dff
+    # Zero dff dataframe so that main callback with triger if dff is empty condition and relod rows data
+    dff = pd.DataFrame()
+    #print("button press")
     
-#     return " Success! "
+    return " Success! "
 
 if __name__ == '__main__':
     #app.run_server(debug=True)
