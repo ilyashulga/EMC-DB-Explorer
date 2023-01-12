@@ -178,7 +178,7 @@ def update_table(n):
     dff = pd.DataFrame()
     #print("button press")
     
-    return " Success! "
+    return " Success! " 
 
 if __name__ == '__main__':
     #app.run_server(debug=True)
