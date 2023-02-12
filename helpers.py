@@ -27,11 +27,12 @@ def add_traces_to_fig(dff, slctd_rows, path_to_emc_plotter_db):
     
     fig = go.Figure()
     
-    # Read Limits.csv content with pandas into dataframe and add to graphs figure
+    # Read Limits.csv content with pandas into dataframe and add to graphs figure (RE Limits)
     try:
         df_limits = pd.read_csv(os.path.join(os.path.abspath(os.path.dirname(__file__)), "static", "Limits.csv"))
     except:
         return print("Error reading Limits.csv")
+    
     df_limits.columns = ['Frequency[MHz]','CISPR11_RE_CLASS_B_Group_1', 'CISPR11_RE_CLASS_B_Group_1_Important', 'CISPR11_RE_CLASS_A_Group_1_up_to_20kVA']
     graph_name = 'Limit: CISPR11 RE CLASS B Group 1'
     fig.add_trace(go.Scatter(x=df_limits["Frequency[MHz]"], y=df_limits["CISPR11_RE_CLASS_B_Group_1"], name=graph_name, mode="lines"))
@@ -40,6 +41,18 @@ def add_traces_to_fig(dff, slctd_rows, path_to_emc_plotter_db):
     graph_name = 'Limit: CISPR11 RE CLASS A Group 1 <20kVA'
     fig.add_trace(go.Scatter(x=df_limits["Frequency[MHz]"], y=df_limits["CISPR11_RE_CLASS_A_Group_1_up_to_20kVA"], name=graph_name, mode="lines", visible='legendonly'))
     
+    # Read Limits.csv content with pandas into dataframe and add to graphs figure (CE Limits)
+    try:
+        df = pd.read_csv(os.path.join(os.path.abspath(os.path.dirname(__file__)), "static", "Limits_CE.csv"))
+    except:
+        return apology("Error in reading Limits_CE.csv file", 400)
+    
+    df.columns = ['Frequency[MHz]','CISPR11_CE_CLASS_B_Group_1_AVG', 'CISPR11_CE_CLASS_A_Group_1_AVG']
+    graph_name = 'Limit: AVG CISPR11 CE CLASS B Group 1'
+    fig.add_trace(go.Scatter(x=df["Frequency[MHz]"], y=df["CISPR11_CE_CLASS_B_Group_1_AVG"], name=graph_name, mode="lines", visible='legendonly'))
+    graph_name = 'Limit: AVG CISPR11 CE CLASS A Group 1'
+    fig.add_trace(go.Scatter(x=df["Frequency[MHz]"], y=df["CISPR11_CE_CLASS_A_Group_1_AVG"], name=graph_name, mode="lines", visible='legendonly'))
+
     # Iterate over each row in selected_rows dataframe
     for index, row in dff.iterrows():
         #print(index)
