@@ -75,7 +75,7 @@ def add_traces_to_fig(dff, slctd_rows, path_to_emc_plotter_db):
                 df_traces = pd.read_csv(os.path.join(path_to_emc_plotter_db, dff.at[index,'folder'], dff.at[index,'filename']), delim_whitespace=True, index_col=False, skiprows=26, skipfooter=15)
                 df_traces.columns = ['Frequency[MHz]','Max(Ver,Hor)']
             # create xy chart using plotly library
-            graph_name = dff.at[index,'model'] + ' ' + dff.at[index,'layout'] + ' ' + ('CL' if dff.at[index, 'is_cl'] else 'OL') + ' ' + dff.at[index,'mode'] + ' ' + str(dff.at[index,'power']) + 'W ' + dff.at[index,'comment']
+            graph_name = dff.at[index,'model'] + ' ' + dff.at[index,'layout'] + ' ' + ('CL' if dff.at[index, 'is_cl'] else 'OL') + ' ' + dff.at[index,'mode'] + ' ' + str(dff.at[index,'power']) + 'W ' + dff.at[index,'comment'] + ' TraceID: ' + str(dff.at[index,'id'])
             fig.add_trace(go.Scatter(x=df_traces["Frequency[MHz]"], y=df_traces["Max(Ver,Hor)"], name=graph_name, mode="lines")) 
 
     # Change x-axis to log scale
@@ -145,7 +145,7 @@ def add_trace_to_fig(dff, added, fig, path_to_emc_plotter_db):
         df_traces = pd.read_csv(os.path.join(path_to_emc_plotter_db, dff.at[added[0],'folder'], dff.at[added[0],'filename']), delim_whitespace=True, index_col=False, skiprows=26, skipfooter=15)
         df_traces.columns = ['Frequency[MHz]','Max(Ver,Hor)']
     # create xy chart using plotly library
-    graph_name = dff.at[added[0],'model'] + ' ' + dff.at[added[0],'layout'] + ' ' + ('CL' if dff.at[added[0], 'is_cl'] else 'OL') + ' ' + dff.at[added[0],'mode'] + ' ' + str(dff.at[added[0],'power']) + 'W ' + dff.at[added[0],'comment']
+    graph_name = dff.at[added[0],'model'] + ' ' + dff.at[added[0],'layout'] + ' ' + ('CL' if dff.at[added[0], 'is_cl'] else 'OL') + ' ' + dff.at[added[0],'mode'] + ' ' + str(dff.at[added[0],'power']) + 'W ' + dff.at[added[0],'comment'] + ' TraceID: ' + str(dff.at[added[0],'id'])
     fig.add_trace(go.Scatter(x=df_traces["Frequency[MHz]"], y=df_traces["Max(Ver,Hor)"], name=graph_name, mode="lines"))
     return fig
 
