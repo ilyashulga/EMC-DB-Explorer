@@ -75,7 +75,7 @@ def add_traces_to_fig(dff, slctd_rows, path_to_emc_plotter_db):
                 df_traces = pd.read_csv(os.path.join(path_to_emc_plotter_db, dff.at[index,'folder'], dff.at[index,'filename']), delim_whitespace=True, index_col=False, skiprows=26, skipfooter=15)
                 df_traces.columns = ['Frequency[MHz]','Max(Ver,Hor)']
             # create xy chart using plotly library
-            graph_name = dff.at[index,'model'] + ' ' + dff.at[index,'layout'] + ' ' + ('CL' if dff.at[index, 'is_cl'] else 'OL') + ' ' + dff.at[index,'mode'] + ' ' + str(dff.at[index,'power']) + 'W ' + dff.at[index,'comment'] + ' TraceID: ' + str(dff.at[index,'id'])
+            graph_name = 'Score: '+ str(dff.at[index,'30-1000MHz']) + ' ' + dff.at[index,'model'] + ' ' + dff.at[index,'layout'] + ' ' + ('CL' if dff.at[index, 'is_cl'] else 'OL') + ' ' + dff.at[index,'mode'] + ' ' + str(dff.at[index,'power']) + 'W ' + dff.at[index,'comment'] + ' TraceID: ' + str(dff.at[index,'id'])
             fig.add_trace(go.Scatter(x=df_traces["Frequency[MHz]"], y=df_traces["Max(Ver,Hor)"], name=graph_name, mode="lines")) 
 
     # Change x-axis to log scale
@@ -145,7 +145,7 @@ def add_trace_to_fig(dff, added, fig, path_to_emc_plotter_db):
         df_traces = pd.read_csv(os.path.join(path_to_emc_plotter_db, dff.at[added[0],'folder'], dff.at[added[0],'filename']), delim_whitespace=True, index_col=False, skiprows=26, skipfooter=15)
         df_traces.columns = ['Frequency[MHz]','Max(Ver,Hor)']
     # create xy chart using plotly library
-    graph_name = dff.at[added[0],'model'] + ' ' + dff.at[added[0],'layout'] + ' ' + ('CL' if dff.at[added[0], 'is_cl'] else 'OL') + ' ' + dff.at[added[0],'mode'] + ' ' + str(dff.at[added[0],'power']) + 'W ' + dff.at[added[0],'comment'] + ' TraceID: ' + str(dff.at[added[0],'id'])
+    graph_name = 'Score: '+ str(dff.at[added[0],'30-1000MHz']) + ' ' + dff.at[added[0],'model'] + ' ' + dff.at[added[0],'layout'] + ' ' + ('CL' if dff.at[added[0], 'is_cl'] else 'OL') + ' ' + dff.at[added[0],'mode'] + ' ' + str(dff.at[added[0],'power']) + 'W ' + dff.at[added[0],'comment'] + ' TraceID: ' + str(dff.at[added[0],'id'])
     fig.add_trace(go.Scatter(x=df_traces["Frequency[MHz]"], y=df_traces["Max(Ver,Hor)"], name=graph_name, mode="lines"))
     return fig
 
@@ -156,7 +156,7 @@ def reload_data_from_db(db_location):
     #print('Connected to db:' + str(db_location))
     
     # Read plotter.db database into a dataframe
-    df = pd.read_sql("SELECT users.username, sessions.lab, sessions.type, graphs.id, graphs.timestamp, graphs.session_id, sessions.name, sessions.description, graphs.model, graphs.layout, graphs.is_potted, graphs.is_cl, graphs.mode, graphs.v_in, graphs.v_out, graphs.i_in, graphs.i_load, graphs.dc, graphs.power, graphs.is_final, sessions.folder, graphs.filename, graphs.comment FROM graphs JOIN users ON sessions.user_id = users.id JOIN sessions ON graphs.session_id = sessions.id", db)
+    df = pd.read_sql("SELECT users.username, sessions.lab, sessions.type, graphs.id, scores.'30-1000MHz', scores.'30-60MHz', scores.'60-100MHz', scores.'100-200MHz', scores.'200-400MHz', scores.'400-1000MHz', graphs.timestamp, graphs.session_id, sessions.name, sessions.description, graphs.model, graphs.layout, graphs.is_potted, graphs.is_cl, graphs.mode, graphs.v_in, graphs.v_out, graphs.i_in, graphs.i_load, graphs.dc, graphs.power, graphs.is_final, sessions.folder, graphs.filename, graphs.comment FROM graphs JOIN users ON sessions.user_id = users.id JOIN sessions ON graphs.session_id = sessions.id LEFT OUTER JOIN scores ON graphs.id = scores.graph_id", db)
     df = df.rename(columns={'name': 'session'})
     #print(df.tail(10))
     

@@ -22,19 +22,19 @@ fig = go.Figure()
 
 # Connect to plotter.db and read  it into a dataframe
 df = reload_data_from_db(path_to_emc_plotter_db + db_name)
-
+#print(df.tail())
 # Sorting operators (https://dash.plotly.com/datatable/filtering)
 app.layout = html.Div([html.Div(id='line-container'),
     dash_table.DataTable(
         id='datatable-interactivity',
         columns=[
             {"name": i, "id": i, "deletable": True, "selectable": True, "hideable": True}
-            if i == "username" or i == "timestamp" or i == "name" or i == "description" or i == "folder" or i == "filename" or i == "lab"
+            if i == "username" or i == "30-1000MHz" or i == "30-60MHz" or i == "60-100MHz" or i == "100-200MHz" or i == "200-400MHz" or i == "400-1000MHz" or i == "timestamp" or i == "name" or i == "description" or i == "folder" or i == "filename" or i == "lab"
             else {"name": i, "id": i, "deletable": True, "selectable": True}
             for i in df.columns
         ],
         data=df.to_dict('records'),  # the contents of the table
-        hidden_columns = ["folder", "filename"],
+        hidden_columns = ["folder", "filename", "timestamp", "description", "is_cl", "is_final", "30-60MHz", "60-100MHz", "100-200MHz", "200-400MHz", "400-1000MHz"],
         editable=False,              # allow editing of data inside all cells
         filter_action="native",     # allow filtering of data by user ('native') or not ('none')
         sort_action="native",       # enables data to be sorted per-column by user or not ('none')
